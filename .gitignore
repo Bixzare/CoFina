@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Environment variables
 .env
 
@@ -22,3 +23,33 @@ chroma_db/
 # OS
 .DS_Store
 Thumbs.db
+=======
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+env/
+venv/
+.env/
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database artifacts
+*.sqlite
+*.db
+
+# IDEs / editors
+.vscode/
+.idea/
+>>>>>>> e2f5f1e7eb686bca7d380732b12de38b89a5b45d
