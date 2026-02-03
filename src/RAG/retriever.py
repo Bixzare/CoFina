@@ -14,7 +14,7 @@ def format_docs(docs):
 def create_rag_chain(retriever, api_key: str):
     """Create RAG chain with Gemini LLM via CMU gateway."""
     llm = ChatOpenAI(
-        model="gemini-1.5-pro-002",
+        model="gemini-2.5-pro",
         api_key=api_key,
         base_url='https://ai-gateway.andrew.cmu.edu/',
         temperature=0.3
