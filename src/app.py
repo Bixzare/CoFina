@@ -124,6 +124,8 @@ def setup_rag(force_reindex: bool = False):
 def main():
     """Main CLI loop."""
     import argparse
+    from agent.core import CoFinaAgent
+    from utils.logger import AgentLogger
     
     parser = argparse.ArgumentParser(description="CoFina RAG Agent")
     parser.add_argument('--reindex', action='store_true', 
@@ -134,12 +136,25 @@ def main():
         print("Error: OPENAI_API_KEY not found in .env file")
         return
     
-    chain = setup_rag(force_reindex=args.reindex)
-    if not chain:
-        return
+    # Initialize logger
+    logger = AgentLogger()
+    print(f"Logging traces to {logger.log_dir}")
+    
+    # Setup RAG (Index check)
+    # We still use setup_rag to handle the indexing part, but we don't need the chain it returns
+    # The Agent will create its own components
+    print("Checking document index...")
+    _ = setup_rag(force_reindex=args.reindex)
+    
+    # Initialize Agent
+    print("\nInitializing CoFina Agent...")
+    agent = CoFinaAgent(API_KEY, logger)
     
     print("\n=== RAG Agent Ready ===")
     print("Type 'quit' to exit\n")
+    
+    # Simple user ID for demo
+    user_id = "default_user"
     
     while True:
         question = input("Question: ").strip()
@@ -150,8 +165,16 @@ def main():
         if not question:
             continue
         
-        result = query(chain, question)
-        print(f"\nAnswer: {result['result']}\n")
+        try:
+            # Run Agent
+            answer = agent.run(question, user_id=user_id)
+            print(f"\nAnswer: {answer}\n")
+            
+        except Exception as e:
+            print(f"\nError: {e}\n")
+            logger.log_step("error", str(e))
+            import traceback
+            traceback.print_exc()
 
 if __name__ == "__main__":
     main()

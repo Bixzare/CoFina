@@ -37,9 +37,18 @@ Answer:"""
         | StrOutputParser()
     )
     
-    return chain
+    # We need to return source docs too for citation
+    from langchain_core.runnables import RunnableParallel
+    chain_with_source = RunnableParallel(
+        {
+            "result": chain, 
+            "source_documents": retriever
+        }
+    )
+    
+    return chain_with_source
 
 def query(chain, question: str):
     """Query the RAG chain."""
-    result = chain.invoke(question)
-    return {"result": result}
+    # invoke returns a dict with 'result' and 'source_documents'
+    return chain.invoke(question)
