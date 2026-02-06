@@ -7,7 +7,7 @@ from RAG.chunking import chunk_documents
 from RAG.index import create_vector_store, add_documents_to_index
 from RAG.retriever import create_retriever, create_rag_chain, query
 
-# Load environment variables from parent directory
+# Load environment variables
 load_dotenv(dotenv_path=Path(__file__).parent.parent / ".env")
 API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -33,7 +33,6 @@ def get_docs_hash(docs_dir: str = "./docs"):
     if not pdf_files:
         return None
     
-    # Create hash from filenames and modification times
     hash_input = ""
     for pdf_file in pdf_files:
         hash_input += f"{pdf_file.name}:{pdf_file.stat().st_mtime}:"
@@ -45,7 +44,6 @@ def setup_rag(force_reindex: bool = False):
     persist_dir = Path("./chroma_db")
     hash_file = persist_dir / ".docs_hash"
     
-    # Check if we need to reindex
     current_hash = get_docs_hash()
     if not current_hash:
         print("No PDFs found in ./docs directory")
@@ -54,7 +52,6 @@ def setup_rag(force_reindex: bool = False):
     needs_reindex = force_reindex
     
     if not needs_reindex and persist_dir.exists() and hash_file.exists():
-        # Check if documents have changed
         with open(hash_file, 'r') as f:
             stored_hash = f.read().strip()
         
@@ -62,7 +59,6 @@ def setup_rag(force_reindex: bool = False):
             print("Loading existing vector store (documents unchanged)...")
             vector_store = create_vector_store(API_KEY)
             
-            # Verify the store has documents
             try:
                 collection = vector_store._collection
                 if collection.count() > 0:
@@ -85,7 +81,6 @@ def setup_rag(force_reindex: bool = False):
             print("No existing vector store found, creating new one...")
         needs_reindex = True
     
-    # Reindex if needed
     if needs_reindex:
         print("Loading PDFs...")
         documents = load_pdfs()
@@ -101,7 +96,6 @@ def setup_rag(force_reindex: bool = False):
         print("Creating vector store...")
         vector_store = create_vector_store(API_KEY)
         
-        # Clear existing data if any
         try:
             vector_store.delete_collection()
             vector_store = create_vector_store(API_KEY)
@@ -110,7 +104,6 @@ def setup_rag(force_reindex: bool = False):
         
         add_documents_to_index(vector_store, chunks)
         
-        # Save the hash
         persist_dir.mkdir(exist_ok=True)
         with open(hash_file, 'w') as f:
             f.write(current_hash)
@@ -121,8 +114,35 @@ def setup_rag(force_reindex: bool = False):
         
         return chain
 
+def detect_user_id_in_message(message: str) -> str:
+    """
+    Intelligently detect user ID from natural conversation.
+    Examples:
+    - "My ID is iliya0003"
+    - "I'm iliya0003"
+    - "This is djibrilla"
+    - "iliya0003 here"
+    """
+    import re
+    
+    # Pattern 1: "my id is X" or "my user id is X"
+    pattern1 = r"(?:my (?:user )?id is |i'?m |this is |it'?s )\s*([a-zA-Z0-9_]+)"
+    match = re.search(pattern1, message.lower())
+    if match:
+        return match.group(1)
+    
+    # Pattern 2: Standalone alphanumeric (e.g., "iliya0003")
+    # Only if message is short (to avoid false positives)
+    if len(message.split()) <= 3:
+        pattern2 = r"\b([a-zA-Z][a-zA-Z0-9_]{3,15})\b"
+        match = re.search(pattern2, message)
+        if match:
+            return match.group(1)
+    
+    return None
+
 def main():
-    """Main CLI loop."""
+    """Main CLI loop with intelligent session management."""
     import argparse
     from agent.core import CoFinaAgent
     from utils.logger import AgentLogger
@@ -136,45 +156,63 @@ def main():
         print("Error: OPENAI_API_KEY not found in .env file")
         return
     
-    # Initialize logger
     logger = AgentLogger()
-    print(f"Logging traces to {logger.log_dir}")
-    
-    # Setup RAG (Index check)
-    # We still use setup_rag to handle the indexing part, but we don't need the chain it returns
-    # The Agent will create its own components
-    print("Checking document index...")
-    _ = setup_rag(force_reindex=args.reindex)
-    
-    # Initialize Agent
-    print("\nInitializing CoFina Agent...")
     agent = CoFinaAgent(API_KEY, logger)
     
-    print("\n=== RAG Agent Ready ===")
-    print("Type 'quit' to exit\n")
+    current_user_id = "guest"
+    authenticated = False
     
-    # Simple user ID for demo
-    user_id = "default_user"
-    
+    print("\n" + "-" * 110)
+    print("🤖 CoFina Agent: Your Intelligent Financial Assistant")
+    print("💡 Ask me anything about personal finance, budgeting, or products!")
+    print("🔐 For personalized advice, I'll guide you through authentication.")
+    print("-" * 110)
+    print("Commands: 'exit', 'quit', 'end' to close | 'logout' to switch users\n")
+
     while True:
-        question = input("Question: ").strip()
+        question = input("You 👤: ").strip()
         
-        if question.lower() in ['quit', 'exit', 'q']:
+        if question.lower() in ['quit', 'exit', 'end']:
+            print("\n👋 Thank you for using CoFina! Have a great day!\n")
             break
         
+        if question.lower() == 'logout':
+            current_user_id = "guest"
+            authenticated = False
+            print("\n Logged out. You're now in guest mode.\n")
+            continue
+            
         if not question:
             continue
-        
+
+        # Smart user ID detection
+        detected_id = detect_user_id_in_message(question)
+        if detected_id and current_user_id == "guest":
+            # Don't auto-switch, let agent handle it through tools
+            pass
+
         try:
-            # Run Agent
-            answer = agent.run(question, user_id=user_id)
-            print(f"\nAnswer: {answer}\n")
+            answer = agent.run(question, user_id=current_user_id)
+            print(f"\n🤖 CoFina: {answer}\n")
             
+            # Check if agent authenticated user successfully
+            # Look for verification success patterns
+            if "successfully verified" in answer.lower() or "authenticated" in answer.lower():
+                if detected_id:
+                    current_user_id = detected_id
+                    authenticated = True
+                    print(f"---  Session authenticated as: {current_user_id} ---\n")
+            
+            # Check for successful registration
+            if "successfully registered" in answer.lower() or "registration complete" in answer.lower():
+                if detected_id:
+                    current_user_id = detected_id
+                    authenticated = True
+                    print(f"---  Registered and logged in as: {current_user_id} ---\n")
+
         except Exception as e:
-            print(f"\nError: {e}\n")
+            print(f"\n❌ Error: {e}\n")
             logger.log_step("error", str(e))
-            import traceback
-            traceback.print_exc()
 
 if __name__ == "__main__":
     main()

@@ -1,7 +1,7 @@
 import chromadb
 from chromadb.config import Settings
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 
 def create_vector_store(api_key: str, persist_directory: str = "./chroma_db"):
     """Create or load ChromaDB vector store."""
