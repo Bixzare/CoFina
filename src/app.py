@@ -117,11 +117,7 @@ def setup_rag(force_reindex: bool = False):
 def detect_user_id_in_message(message: str) -> str:
     """
     Intelligently detect user ID from natural conversation.
-    Examples:
-    - "My ID is iliya0003"
-    - "I'm iliya0003"
-    - "This is djibrilla"
-    - "iliya0003 here"
+    
     """
     import re
     
