@@ -24,6 +24,11 @@ A simple RAG (Retrieval-Augmented Generation) agent using LangChain, ChromaDB, a
 
 ## Usage
 
+From the root directory, run the following CLI command:
+```bash
+python setupDB.py
+```
+
 Run the CLI:
 ```bash
 cd src

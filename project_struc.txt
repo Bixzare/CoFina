@@ -1,0 +1,79 @@
+.
+├── README.md
+├── chroma_db
+│   └── chroma.sqlite3
+├── logs
+│   ├── trace_20260205_170338.json
+│   ├── trace_20260205_172049.json
+│   ├── trace_20260205_213751.json
+│   ├── trace_20260205_215232.json
+│   ├── trace_20260205_223412.json
+│   ├── trace_20260205_224726.json
+│   ├── trace_20260205_225850.json
+│   └── trace_20260206_033032.json
+├── project_struc.txt
+├── requirements.txt
+├── setupDB.py
+└── src
+    ├── RAG
+    │   ├── chunking.py
+    │   ├── index.py
+    │   └── retriever.py
+    ├── __init__.py
+    ├── agent
+    │   ├── core.py
+    │   └── verifier.py
+    ├── app.py
+    ├── chroma_db
+    │   ├── 2f9b3a7c-b057-4855-afb0-22cd06534180
+    │   │   ├── data_level0.bin
+    │   │   ├── header.bin
+    │   │   ├── length.bin
+    │   │   └── link_lists.bin
+    │   ├── 675d94eb-a8d3-42dd-b9ea-20dae3f7ee94
+    │   │   ├── data_level0.bin
+    │   │   ├── header.bin
+    │   │   ├── length.bin
+    │   │   └── link_lists.bin
+    │   └── chroma.sqlite3
+    ├── db
+    │   ├── __init__.py
+    │   ├── cofina.db
+    │   └── queries.py
+    ├── docs
+    │   ├── 50-30-20-Budget-Plan.pdf
+    │   ├── 810-5072.pdf
+    │   ├── Agentic AI System Project.pdf
+    │   ├── Biograph_50-30-20.pdf
+    │   ├── Practical-Guide-to-Financial-Independence-for-Young-Professionals-Laurel-Road.pdf
+    │   ├── Risk management.pdf
+    │   ├── The 50.pdf
+    │   ├── boosting-young-professionals-financial-wellness.pdf
+    │   ├── budget_worksheet_pdf.pdf
+    │   ├── using_debt_effectively1617.pdf
+    │   ├── wealth-insights-money-matters-for-young-professionals.pdf
+    │   └── your_50_30_20_monthly_budget_guide.pdf
+    ├── logs
+    │   ├── trace_20260205_040914.json
+    │   ├── trace_20260205_133758.json
+    │   ├── trace_20260205_134518.json
+    │   ├── trace_20260205_135254.json
+    │   ├── trace_20260205_135539.json
+    │   ├── trace_20260205_135710.json
+    │   ├── trace_20260205_142021.json
+    │   ├── trace_20260205_143017.json
+    │   ├── trace_20260205_144621.json
+    │   ├── trace_20260205_150610.json
+    │   ├── trace_20260205_152007.json
+    │   ├── trace_20260206_042310.json
+    │   ├── trace_20260206_043238.json
+    │   ├── trace_20260206_045428.json
+    │   ├── trace_20260206_053041.json
+    │   └── trace_20260206_082438.json
+    ├── tools
+    │   ├── searchProducts.py
+    │   └── user_profile.py
+    └── utils
+        └── logger.py
+
+14 directories, 63 files
