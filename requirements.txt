@@ -9,3 +9,6 @@ bcrypt
 python-dotenv
 sentence-transformers
 reportlab
+requests
+numpy
+pandas
