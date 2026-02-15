@@ -1,0 +1,39 @@
+# Agent Configuration
+agent:
+  max_turns: 50
+  idle_timeout_minutes: 30
+
+# Planning
+planning:
+  max_subtasks: 10
+  retry_on_failure: true
+
+# Utility Weights
+utility:
+  goal_progress: 0.4
+  savings_stability: 0.3
+  overspending_risk: 0.2
+  liquidity_risk: 0.1
+
+# Thresholds
+thresholds:
+  groundedness: 0.7
+  tool_success_rate: 0.8
+  max_iterations: 5
+  hallucination: 0.3
+
+# Database
+database:
+  path: "src/db/cofina.db"
+  backup_enabled: true
+
+# RAG
+rag:
+  max_docs: 3
+  cache_ttl_hours: 24
+
+# Logging
+logging:
+  level: "INFO"
+  save_traces: true
+  trace_format: "json"

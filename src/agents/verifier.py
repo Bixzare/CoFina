@@ -19,7 +19,7 @@ def verify_response(
     Verify the groundedness of the answer against the retrieved context.
     """
     llm = ChatOpenAI(
-        model="gpt-4o-2024-08-06",
+        model="gemini-2.5-flash",
         api_key=api_key,
         base_url='https://ai-gateway.andrew.cmu.edu/',
         temperature=0.0

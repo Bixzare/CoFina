@@ -15,7 +15,7 @@ import json
 # Internal imports
 from RAG.index import create_vector_store
 from RAG.retriever import create_retriever, format_docs
-from agent.verifier import verify_response
+from agents.verifier import verify_response
 from tools.user_profile import get_user_profile, update_user_preferences, create_financial_plan
 from tools.searchProducts import search_products
 from tools.dateTime import TIME_TOOLS
@@ -191,7 +191,7 @@ class CoFinaAgent:
         self.setup_step = None  # Track current setup step
 
         self.llm = ChatOpenAI(
-            model="gpt-4o-2024-08-06",
+            model="gemini-2.5-flash",
             api_key=api_key,
             base_url="https://ai-gateway.andrew.cmu.edu/",
             temperature=0.2,
