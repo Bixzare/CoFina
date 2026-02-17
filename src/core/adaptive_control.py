@@ -6,14 +6,22 @@ from typing import Dict, Any, Optional, List, Callable
 from datetime import datetime
 import json
 import sqlite3
-
+import os
 class AdaptiveController:
     """
     Monitors agent performance and adapts behavior in real-time
     """
     
-    def __init__(self, db_path: str = "src/db/cofina.db"):
-        self.db_path = db_path
+    def __init__(self, db_path: Optional[str] = None):
+        if db_path is None:
+            # Default to src/db/cofina.db relative to this file
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            self.db_path = os.path.join(base_dir, "db", "cofina.db")
+        else:
+            self.db_path = db_path
+            
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         self.thresholds = {
             "groundedness": 0.7,
             "tool_success_rate": 0.8,

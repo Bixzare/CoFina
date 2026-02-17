@@ -9,14 +9,23 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List, Tuple
 from collections import deque
 import numpy as np
-
+import os
 class MemoryManager:
     """
     Manages agent memory with read/write policies and pruning strategies
     """
     
-    def __init__(self, db_path: str = "src/db/cofina.db"):
-        self.db_path = db_path
+    def __init__(self, db_path: Optional[str] = None):
+        if db_path is None:
+            # Default to src/db/cofina.db relative to this file
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            self.db_path = os.path.join(base_dir, "db", "cofina.db")
+        else:
+            self.db_path = db_path
+            
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        
         self.short_term = deque(maxlen=50)  # Recent interactions
         self.working_memory = {}  # Current context
         self._init_memory_tables()
