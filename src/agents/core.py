@@ -197,7 +197,7 @@ class CoFinaAgent:
             temperature=0.2,
         )
 
-        # Register tools
+        # Register toolsana
         self.tools = [
             get_user_info,
             check_user_exists,
