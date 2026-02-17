@@ -109,7 +109,7 @@ def create_rag_chain(retriever, api_key: str):
         api_key=api_key,
         base_url='https://ai-gateway.andrew.cmu.edu/',
         temperature=0.1,  # Lower temperature for faster, more consistent responses
-        max_tokens=500,    # Limit response length
+        max_tokens=600,    # Limit response length
         timeout=30         # Timeout after 30 seconds
     )
     
