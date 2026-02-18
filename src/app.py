@@ -150,7 +150,7 @@ class CoFinaInterface:
 
     def prompt_user(self) -> str:
         return input(
-            f"\n{self.c('┌', 'bright_blue')} {self.c('You:', 'bright_white', 'bold')}\n"
+            f"\n{self.c('┌', 'bright_blue')} {self.c('👤 You:', 'bright_white', 'bold')}\n"
             f"{self.c('└→', 'bright_blue')} "
         ).strip()
 
@@ -159,7 +159,7 @@ class CoFinaInterface:
         Render CoFina's response.  Multi-line responses (registration prompts,
         step-by-step questions) are displayed line-by-line with a left margin.
         """
-        print(f"\n{self.c('┌', 'bright_magenta')} {self.c('CoFina:', 'bright_white', 'bold')}")
+        print(f"\n{self.c('┌', 'bright_magenta')} {self.c('🤖 CoFina:', 'bright_white', 'bold')}")
         for line in response.splitlines():
             # Wrap long single lines at 74 chars
             if len(line) > 74:

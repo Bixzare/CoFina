@@ -32,7 +32,10 @@ from agents.market_agent import MarketAgent
 from agents.monitor_agent import MonitorAgent
 from agents.registration_agent import RegistrationAgent
 from agents.summarizer_agent import SummarizerAgent
+from agents.verifier import verify_response
+from core.adaptive_control import AdaptiveController
 from core.checkpoint import CheckpointManager
+from core.evaluation import EvaluationMetrics
 from core.memory_manager import MemoryManager
 from core.state_manager import SessionPhase, StateManager
 from tools.dateTime import TIME_TOOLS
@@ -47,11 +50,17 @@ class CoFinaOrchestrator:
     def __init__(self, api_key: str) -> None:
         self.api_key = api_key
         self.logger = AgentLogger()
+        
+        # ── Verification tracking (initialize FIRST) ─────────────────────
+        self.turn_number = 0
+        self.last_rag_context = ""
 
         # ── Core infrastructure ──────────────────────────────────────────
         self.state_manager = StateManager()
         self.memory_manager = MemoryManager()
         self.checkpoint_manager = CheckpointManager()
+        self.evaluator = EvaluationMetrics()
+        self.adaptive_controller = AdaptiveController()
 
         # ── Sub-agents (long-lived, stateful) ────────────────────────────
         self.registration_agent = RegistrationAgent()
@@ -216,6 +225,11 @@ class CoFinaOrchestrator:
             if not self.retriever:
                 return json.dumps({"error": "Knowledge base not available"})
             docs = self.retriever.invoke(query)
+            # Store RAG context for verification
+            self.last_rag_context = "\n\n".join([
+                f"[{d.metadata.get('source', 'unknown')}]\n{d.page_content}"
+                for d in docs[:3]
+            ])
             results = [
                 {"content": d.page_content, "source": d.metadata.get("source", "unknown")}
                 for d in docs[:3]
@@ -281,6 +295,43 @@ class CoFinaOrchestrator:
         messages.append(HumanMessage(content=user_query))
 
         response_text = self._tool_loop(messages, user_query)
+        
+        # ── Verify non-conversational responses ─────────────────────────
+        self.turn_number += 1
+        if not self._is_conversational(user_query) and self.last_rag_context:
+            try:
+                verification = verify_response(
+                    question=user_query,
+                    answer=response_text,
+                    context=self.last_rag_context,
+                    api_key=self.api_key,
+                )
+                
+                # Log verification
+                self.evaluator.log_verification(
+                    session_id=self.current_session_id,
+                    user_id=self.current_user_id,
+                    turn_number=self.turn_number,
+                    query=user_query,
+                    response=response_text,
+                    rag_context=self.last_rag_context,
+                    verification=verification,
+                )
+                self.logger.log_step("verification", verification)
+                
+                # Add subtle badge for high confidence (optional UI enhancement)
+                score = verification.get("score", 0.0)
+                if score >= 0.85:
+                    response_text += f"\n\n✓ Verified (confidence: {score:.0%})"
+                elif score >= 0.7:
+                    response_text += f"\n\n⚠️ Moderate confidence ({score:.0%})"
+                
+                # Clear context for next turn
+                self.last_rag_context = ""
+                
+            except Exception as exc:
+                self.logger.log_step("verification_error", str(exc))
+        
         self.logger.end_turn(response_text)
         return response_text
 
@@ -315,10 +366,19 @@ class CoFinaOrchestrator:
                     if fn:
                         try:
                             result = fn.invoke(args)
+                            # Log tool success
+                            try:
+                                parsed = json.loads(result) if isinstance(result, str) else result
+                                success = not ("error" in parsed or parsed.get("success") == False)
+                                self.evaluator.log_tool_call(self.current_session_id, name, success)
+                            except Exception:
+                                pass  # Non-JSON tools are assumed successful
                         except Exception as exc:
                             result = json.dumps({"error": str(exc)})
+                            self.evaluator.log_tool_call(self.current_session_id, name, False)
                     else:
                         result = json.dumps({"error": f"Unknown tool: {name}"})
+                        self.evaluator.log_tool_call(self.current_session_id, name, False)
 
                     print(f"📦  → {str(result)[:200]}")
                     messages.append(ToolMessage(content=str(result), tool_call_id=call_id))
@@ -424,6 +484,15 @@ RULES
   tell them to log in first, then offer to help.
 • Keep responses focused on financial well-being.
 """
+
+    def _is_conversational(self, query: str) -> bool:
+        """Check if query is conversational (no verification needed)."""
+        conversational_patterns = [
+            "hi", "hello", "hey", "thanks", "thank you", "bye", "goodbye",
+            "register", "login", "logout", "status", "help",
+        ]
+        q = query.lower()
+        return any(p in q for p in conversational_patterns) or len(query.split()) < 4
 
     def _guardrail_response(self, result: Dict) -> str:
         actions = result.get("actions", [])
