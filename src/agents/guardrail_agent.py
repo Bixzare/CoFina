@@ -156,6 +156,7 @@ class GuardrailAgent:
             results["actions"].append("redact")
 
         # ── Auth gate ─────────────────────────────────────────────────────
+        # FIXED: Only block if user is guest (not logged in)
         if self._needs_auth(query) and user_id == "guest":
             results["passed"] = False
             results["warnings"].append("Authentication required for this request")
@@ -256,12 +257,12 @@ class GuardrailAgent:
     # ── Auth gate ─────────────────────────────────────────────────────────────
 
     def _needs_auth(self, query: str) -> bool:
+        # FIXED: Removed overly aggressive patterns like "create\s+(plan|goal)"
+        # Only check for explicitly personal queries that need login
         auth_patterns = [
-            r"my\s+(plan|profile|preferences|goals)",
-            r"my\s+(spending|transactions|balance)",
-            r"update\s+(my|profile)",
-            r"create\s+(plan|goal)",
-            r"show\s+(me\s+)?my",
+            r"\bmy\s+(plan|profile|preferences|goals|spending|transactions|balance)\b",
+            r"\bupdate\s+(my|profile)\b",
+            r"\bshow\s+(me\s+)?my\b",
         ]
         return any(re.search(p, query, re.IGNORECASE) for p in auth_patterns)
 
