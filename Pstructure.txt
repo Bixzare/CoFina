@@ -11,21 +11,8 @@
 │   └── chroma.sqlite3
 ├── config.yaml
 ├── logs
-│   ├── trace_20260215_113224.json
-│   ├── trace_20260215_122448.json
-│   ├── trace_20260215_122449.json
-│   ├── trace_20260215_125252.json
-│   ├── trace_20260215_125253.json
-│   ├── trace_20260215_152739.json
-│   ├── trace_20260215_152740.json
-│   ├── trace_20260215_160243.json
-│   ├── trace_20260215_170254.json
-│   ├── trace_20260215_170255.json
-│   ├── trace_20260215_170657.json
-│   ├── trace_20260215_212819.json
-│   ├── trace_20260215_212821.json
-│   ├── trace_20260216_104630.json
-│   └── trace_20260216_124144.json
+│   ├── trace_20260216_124144.json
+│   └── trace_20260218_194522.json
 ├── requirements.txt
 ├── setupDB.py
 ├── src
@@ -113,4 +100,4 @@
     ├── failure_analysis.py
     └── test_cases.py
 
-20 directories, 94 files
+20 directories, 81 files
