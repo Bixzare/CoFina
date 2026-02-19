@@ -5,6 +5,7 @@ from langchain_core.output_parsers import StrOutputParser
 import hashlib
 import json
 import os
+import time
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 
@@ -144,22 +145,26 @@ def query(chain, question: str, use_cache: bool = True) -> Dict[str, Any]:
         use_cache: Whether to use cache
     
     Returns:
-        Dict with 'result' and 'source_documents'
+        Dict with 'result', 'source_documents', 'retrieval_time_ms', and 'cached'
     """
     # Check cache first
     if use_cache:
         cached = _rag_cache.get(question)
         if cached:
             cached['cached'] = True
+            cached.setdefault('retrieval_time_ms', 0)  # Cache hits have no retrieval cost
             return cached
     
-    # If not cached, run the query
+    # If not cached, run the query with timing
     try:
-        # Get source documents first
         retriever = chain.steps[0]["context"].steps[0]  # Extract retriever from chain
+
+        # ── Time the retrieval step ──────────────────────────────────────
+        t0 = time.perf_counter()
         source_docs = retriever.invoke(question)
-        
-        # Get result
+        retrieval_time_ms = round((time.perf_counter() - t0) * 1000)
+
+        # Get result (LLM generation, not included in retrieval time)
         result = chain.invoke(question)
         
         output = {
@@ -172,6 +177,7 @@ def query(chain, question: str, use_cache: bool = True) -> Dict[str, Any]:
                 }
                 for doc in source_docs
             ],
+            "retrieval_time_ms": retrieval_time_ms,
             "cached": False
         }
         
@@ -185,6 +191,7 @@ def query(chain, question: str, use_cache: bool = True) -> Dict[str, Any]:
         return {
             "result": f"I encountered an error while searching: {str(e)}",
             "source_documents": [],
+            "retrieval_time_ms": 0,
             "error": str(e),
             "cached": False
         }
