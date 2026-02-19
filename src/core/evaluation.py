@@ -6,24 +6,76 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from datetime import datetime
-from typing import Any, Dict, List, Optional
-
-
+import numpy as np
+import os
 class EvaluationMetrics:
     """
     Tracks verification scores, tool success rates, and other agent metrics.
     """
-
-    def __init__(self, db_path: str = "src/db/cofina.db") -> None:
-        self.db_path = db_path
-        self._init_tables()
-
-        # Recent metrics sliding window (last 10 turns)
-        self._recent_verifications: List[float] = []
-        self._recent_tool_calls: List[bool] = []
-
-    def _init_tables(self) -> None:
+    
+    def __init__(self, db_path: Optional[str] = None):
+        if db_path is None:
+            # Default to src/db/cofina.db relative to this file
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            self.db_path = os.path.join(base_dir, "db", "cofina.db")
+        else:
+            self.db_path = db_path
+            
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+            
+        self._init_metrics_tables()
+        
+        self.metric_definitions = {
+            "groundedness_score": {
+                "description": "How well responses are grounded in retrieved context",
+                "range": [0, 1],
+                "higher_is_better": True
+            },
+            "tool_selection_accuracy": {
+                "description": "Correctness of tool selection for given tasks",
+                "range": [0, 1],
+                "higher_is_better": True
+            },
+            "task_completion_rate": {
+                "description": "Percentage of tasks successfully completed",
+                "range": [0, 1],
+                "higher_is_better": True
+            },
+            "iterations_before_convergence": {
+                "description": "Number of iterations needed to complete task",
+                "range": [1, 10],
+                "higher_is_better": False
+            },
+            "hallucination_frequency": {
+                "description": "Frequency of ungrounded claims",
+                "range": [0, 1],
+                "higher_is_better": False
+            },
+            "plan_adherence_score": {
+                "description": "How well user adheres to financial plan",
+                "range": [0, 1],
+                "higher_is_better": True
+            },
+            "human_escalation_rate": {
+                "description": "Frequency of human intervention needed",
+                "range": [0, 1],
+                "higher_is_better": False
+            },
+            "response_time": {
+                "description": "Average response time in seconds",
+                "range": [0, 10],
+                "higher_is_better": False
+            },
+            "user_satisfaction": {
+                "description": "User satisfaction score from feedback",
+                "range": [1, 5],
+                "higher_is_better": True
+            }
+        }
+    
+    def _init_metrics_tables(self):
+        """Initialize metrics tracking tables"""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """

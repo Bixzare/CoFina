@@ -6,18 +6,26 @@ thresholds are crossed. For MVP, it's primarily observational — full
 closed-loop adaptation can be added in Phase 2.
 """
 
-from __future__ import annotations
-
-from typing import Any, Dict
-
-
+from typing import Dict, Any, Optional, List, Callable
+from datetime import datetime
+import json
+import sqlite3
+import os
 class AdaptiveController:
     """
     Monitors performance metrics and flags issues.
     """
-
-    def __init__(self) -> None:
-        # Thresholds for triggering warnings/adaptations
+    
+    def __init__(self, db_path: Optional[str] = None):
+        if db_path is None:
+            # Default to src/db/cofina.db relative to this file
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            self.db_path = os.path.join(base_dir, "db", "cofina.db")
+        else:
+            self.db_path = db_path
+            
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         self.thresholds = {
             "min_groundedness": 0.7,
             "min_tool_success_rate": 0.8,

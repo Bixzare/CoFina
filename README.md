@@ -10,6 +10,15 @@ A simple RAG (Retrieval-Augmented Generation) agent using LangChain, ChromaDB, a
    venv\Scripts\activate  # Windows
    ```
 
+**Requires python 3.12 or older, if you face issues with chromaDB or pydantic use 3.12 or older, this requires you to have installed that runtime on your system and then to create a virtual environment with that specific runtime**
+
+```bash
+py -3.12 -m venv venv
+venv/Scripts/activate
+```
+**Remember to create venv in root**
+
+
 2. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
