@@ -14,8 +14,17 @@ class CheckpointManager:
     Manages system checkpoints for fault tolerance and recovery
     """
     
-    def __init__(self, db_path: str = "src/db/cofina.db"):
-        self.db_path = db_path
+    def __init__(self, db_path: Optional[str] = None):
+        if db_path is None:
+            # Default to src/db/cofina.db relative to this file
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            self.db_path = os.path.join(base_dir, "db", "cofina.db")
+        else:
+            self.db_path = db_path
+            
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+            
         self._init_checkpoint_tables()
     
     def _init_checkpoint_tables(self):
