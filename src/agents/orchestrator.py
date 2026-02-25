@@ -79,10 +79,10 @@ class CoFinaOrchestrator:
             vector_store   = ensure_index(api_key)
             self.retriever = create_retriever(vector_store)
             self.financial_planner.rag_retriever = self.retriever
-            print("✅ RAG system ready")
+            print(" ... RAG system ready")
         except Exception as exc:
             self.logger.log_step("warning", f"RAG init skipped: {exc}")
-            print(f"⚠️  RAG unavailable: {exc}")
+            print(f" ... RAG unavailable: {exc}")
 
         # LLM (orchestrator level)
         self.llm = ChatOpenAI(
@@ -171,7 +171,7 @@ class CoFinaOrchestrator:
                 return json.dumps({
                     "success": False,
                     "message": (
-                        f"⚠️  No account found for '{user_id}'. "
+                        f" ... No account found for '{user_id}'. "
                         "Please check your User ID or say 'register' to create a new account."
                     ),
                 })
@@ -184,7 +184,7 @@ class CoFinaOrchestrator:
                 return json.dumps({
                     "success": True,
                     "message": (
-                        f"✅ Welcome back, {first_name}! You're now logged in.\n"
+                        f" ... Welcome back, {first_name}! You're now logged in.\n"
                         "What would you like to do today? I can help with your "
                         "financial plan, debt tracking, savings goals, and more."
                     ),
@@ -192,7 +192,7 @@ class CoFinaOrchestrator:
             return json.dumps({
                 "success": False,
                 "message": (
-                    "❌ Incorrect password. Please try again, or say "
+                    " ... Incorrect password. Please try again, or say "
                     "'forgot password' if you'd like to reset it."
                 ),
             })
@@ -279,7 +279,7 @@ class CoFinaOrchestrator:
         # ── Intercept logout ─────────────────────────────────────────────
         if any(kw in _lc for kw in ("logout", "log out", "log off", "sign out")):
             self.logout()
-            response = "✅ You've been logged out. See you next time!"
+            response = " ... You've been logged out. See you next time!"
             self._append_history(user_query, response)
             self.logger.end_turn(response)
             return response
