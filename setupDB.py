@@ -19,7 +19,7 @@ def main():
     """Initialize complete database schema."""
     if not os.path.exists(DB_DIR):
         os.makedirs(DB_DIR)
-        print(f"✅ Created directory: {DB_DIR}")
+        print(f" ... Created directory: {DB_DIR}")
 
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
@@ -160,7 +160,7 @@ def main():
     """)
 
     conn.commit()
-    print("✅ Database schema created successfully.")
+    print(" ... Database schema created successfully.")
     
     # Create indexes for performance
     cur.execute("CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);")
@@ -172,13 +172,13 @@ def main():
     cur.close()
     conn.close()
     
-    print("✅ Indexes created successfully.")
+    print(" ... Indexes created successfully.")
 
 def register_default_users():
     """Register default test users."""
-    print("\n" + "="*60)
-    print("📝 Setting up default users")
-    print("="*60 + "\n")
+    print("\n" + "-"*60)
+    print(" ... Setting up default users")
+    print("-"*60 + "\n")
     
     # Import here after path is set
     from src.db.queries import register_user, user_exists
@@ -284,11 +284,11 @@ def register_default_users():
     ]
     
     for user in default_users:
-        print(f"👤 Processing: {user['first_name']} {user.get('other_names', '')} ({user['user_id']})")
+        print(f" ... Processing: {user['first_name']} {user.get('other_names', '')} ({user['user_id']})")
         print("-" * 60)
         
         if user_exists(user['user_id']):
-            print(f"   ⏭️  User already exists, skipping...")
+            print(f" ... User already exists, skipping...")
         else:
             # Register user
             reg_ok = register_user(
@@ -300,7 +300,7 @@ def register_default_users():
                 user['secret_question'],
                 user['secret_answer']
             )
-            print(f"   ✅ Registration: {'Success' if reg_ok else 'Failed'}")
+            print(f" ... Registration: {'Success' if reg_ok else 'Failed'}")
             
             if reg_ok:
                 # Update profile
@@ -325,7 +325,7 @@ def register_default_users():
                     retirement_age_target=profile['retirement_age_target'],
                     estimated_retirement_date=retirement_date
                 )
-                print(f"   ✅ Profile: {'Saved' if profile_ok else 'Failed'}")
+                print(f" ... Profile: {'Saved' if profile_ok else 'Failed'}")
                 
                 # Set preferences
                 pref = user['preferences']
@@ -335,12 +335,12 @@ def register_default_users():
                     debt_strategy=pref['debt_strategy'],
                     savings_priority=pref['savings_priority']
                 )
-                print(f"   ✅ Preferences: {'Set' if pref_ok else 'Failed'}")
+                print(f" ... Preferences: {'Set' if pref_ok else 'Failed'}")
                 
                 # Add debts
                 for debt in user.get('debts', []):
                     debt_ok = add_user_debt(user['user_id'], debt)
-                    print(f"   ✅ Debt ({debt['debt_type']}): {'Added' if debt_ok else 'Failed'}")
+                    print(f" ... Debt ({debt['debt_type']}): {'Added' if debt_ok else 'Failed'}")
                 
                 # Create plan
                 plan = user['plan']
@@ -350,7 +350,7 @@ def register_default_users():
                     plan['short_term'],
                     plan['long_term']
                 )
-                print(f"   ✅ Financial Plan: {'Created' if plan_ok else 'Failed'}")
+                print(f" ... Financial Plan: {'Created' if plan_ok else 'Failed'}")
         
         print()
 
@@ -377,6 +377,6 @@ def calculate_retirement_date(employment_start: str, target_age: int, current_ag
 if __name__ == "__main__":
     main()
     register_default_users()
-    print("\n" + "="*60)
-    print("✅ CoFina database ready with complete schema!")
-    print("="*60 + "\n")
+    print("\n" + "-"*60)
+    print(" ... CoFina database ready with complete schema!")
+    print("-"*60 + "\n")

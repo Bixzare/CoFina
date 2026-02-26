@@ -1,0 +1,118 @@
+.
+├── Pstructure.txt
+├── README.md
+├── chroma_db
+│   ├── chroma.sqlite3
+│   └── d4457aed-fedc-478f-8d1e-80f0ba23d8e4
+│       ├── data_level0.bin
+│       ├── header.bin
+│       ├── index_metadata.pickle
+│       ├── length.bin
+│       └── link_lists.bin
+├── config.yaml
+├── logs
+│   ├── trace_20260219_140448.json
+│   ├── trace_20260219_140749.json
+│   ├── trace_20260219_140750.json
+│   ├── trace_20260219_153439.json
+│   ├── trace_20260219_173512.json
+│   ├── trace_20260219_173513.json
+│   ├── trace_20260220_140011.json
+│   ├── trace_20260224_153549.json
+│   └── trace_20260224_153550.json
+├── requirements.txt
+├── setupDB.py
+├── src
+│   ├── RAG
+│   │   ├── chunking.py
+│   │   ├── index.py
+│   │   └── retriever.py
+│   ├── __init__.py
+│   ├── agents
+│   │   ├── __init__.py
+│   │   ├── core.py
+│   │   ├── financial_planner.py
+│   │   ├── guardrail_agent.py
+│   │   ├── market_agent.py
+│   │   ├── monitor_agent.py
+│   │   ├── orchestrator.py
+│   │   ├── registration_agent.py
+│   │   ├── summarizer_agent.py
+│   │   └── verifier.py
+│   ├── allPlans
+│   │   ├── guest_General_Financial_Plan_20260219_105223.pdf
+│   │   ├── guest_debt_plan_20260224_153846.pdf
+│   │   ├── guest_investment_plan_20260219_141813.pdf
+│   │   ├── guest_savings_plan_20260219_144655.pdf
+│   │   ├── niliya_Financial_Plan_20260219_102455.pdf
+│   │   ├── niliya_car_plan_20260219_103034.pdf
+│   │   ├── yusufkk_Financial_Plan_20260224_160322.pdf
+│   │   └── yusufkk_car_plan_20260224_155128.pdf
+│   ├── app.py
+│   ├── chroma_db
+│   │   ├── 2f9b3a7c-b057-4855-afb0-22cd06534180
+│   │   │   ├── data_level0.bin
+│   │   │   ├── header.bin
+│   │   │   ├── length.bin
+│   │   │   └── link_lists.bin
+│   │   ├── 675d94eb-a8d3-42dd-b9ea-20dae3f7ee94
+│   │   │   ├── data_level0.bin
+│   │   │   ├── header.bin
+│   │   │   ├── length.bin
+│   │   │   └── link_lists.bin
+│   │   └── chroma.sqlite3
+│   ├── core
+│   │   ├── __init__.py
+│   │   ├── adaptive_control.py
+│   │   ├── checkpoint.py
+│   │   ├── evaluation.py
+│   │   ├── memory_manager.py
+│   │   └── state_manager.py
+│   ├── db
+│   │   ├── __init__.py
+│   │   ├── cofina.db
+│   │   └── queries.py
+│   ├── docs
+│   │   ├── 50-30-20-Budget-Plan.pdf
+│   │   ├── Biograph_50-30-20.pdf
+│   │   ├── Financial_Docus.pdf
+│   │   ├── Investing-for-young-professionals-1.pdf
+│   │   ├── Money-Youth-2018-EN.pdf
+│   │   ├── Practical-Guide-to-Financial-Independence-for-Young-Professionals-Laurel-Road.pdf
+│   │   ├── Risk management.pdf
+│   │   ├── The 50.pdf
+│   │   ├── gem-2015-youth-report-1438012592.pdf
+│   │   ├── sec-guide-to-savings-and-investing.pdf
+│   │   ├── using_debt_effectively1617.pdf
+│   │   ├── wealth-insights-money-matters-for-young-professionals.pdf
+│   │   ├── yepublication58210pdf.pdf
+│   │   └── your_50_30_20_monthly_budget_guide.pdf
+│   ├── knowledge
+│   │   ├── __init__.py
+│   │   ├── conflict_resolver.py
+│   │   └── semantic_network.py
+│   ├── logs
+│   │   └── trace_20260214_172437.json
+│   ├── planning
+│   │   ├── __init__.py
+│   │   ├── agent_planner.py
+│   │   ├── htn_planner.py
+│   │   └── utility_function.py
+│   ├── tools
+│   │   ├── calendar_tools.py
+│   │   ├── dateTime.py
+│   │   ├── financial_calculator.py
+│   │   ├── generatePlan.py
+│   │   ├── searchProducts.py
+│   │   └── user_profile.py
+│   └── utils
+│       ├── async_processor.py
+│       ├── cache.py
+│       ├── logger.py
+│       └── metrics.py
+└── test
+    ├── __init__.py
+    ├── failure_analysis.py
+    └── test_cases.py
+
+20 directories, 96 files
