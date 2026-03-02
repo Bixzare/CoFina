@@ -25,7 +25,7 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
 from tools.user_profile import get_user_profile
-from tools.generatePlan import create_financial_plan_pdf, create_topic_plan_pdf
+from tools.create_pdf import create_financial_plan_pdf, create_topic_plan_pdf
 from tools.financial_calculator import calculate_simple_interest
 from utils.cache import get_cache
 
@@ -92,6 +92,16 @@ Examples:
 "Create a car buying plan for me as a PDF" → intent=car, wants_pdf_now=true
 "I owe $2000, how do I pay it?" → intent=debt, wants_pdf_now=false
 "yes please generate it" → intent=pdf_confirm, wants_pdf_now=true
+"give me pdf file" → intent=full_plan, wants_pdf_now=true
+"create a pdf file" → intent=full_plan, wants_pdf_now=true
+"give me a pdf plan" → intent=full_plan, wants_pdf_now=true
+"create pdf" → intent=full_plan, wants_pdf_now=true
+"save pdf plan" → intent=pdf_confirm, wants_pdf_now=true
+"yes save pdf" → intent=pdf_confirm, wants_pdf_now=true
+"generate pdf plan" → intent=pdf_confirm, wants_pdf_now=true
+"yes" → intent=pdf_confirm, wants_pdf_now=true
+"generate again" → intent=pdf_confirm, wants_pdf_now=true
+"save it" → intent=pdf_confirm, wants_pdf_now=true
 """,
     ),
     ("human", "{query}"),
@@ -183,7 +193,12 @@ class FinancialPlannerAgent:
         if intent == "calculate":
             return self._calculate_interest(query)
 
-        # ── General advice (no plan, no PDF) ─────────────────────────────
+        # ── wants_pdf but no specific topic was identified ──────────────────
+        # e.g. "give me a pdf file", "create a pdf" with no prior pending plan
+        if wants_pdf:
+            return self._create_full_plan(query, user_id, profile)
+
+        # ── General advice (no plan, no PDF) ─────────────────────────────────
         return self._quick_advice(query, user_id, profile)
 
     # ── Topic plan: show reasoning, optionally save PDF ───────────────────────
@@ -223,13 +238,18 @@ class FinancialPlannerAgent:
     # ── PDF generation ────────────────────────────────────────────────────────
 
     def _generate_pending_pdf(self) -> Dict[str, Any]:
+        _uid   = self._pending_user_id or "guest"
+        _topic = self._pending_topic or "financial"
+        _pname = f"{_topic.title()} Plan"
+        print(f"🛠️  create_pdf({{'user_id': {_uid!r}, 'topic': {_topic!r}, 'plan_name': {_pname!r}}})")
         result = create_topic_plan_pdf(
-            user_id=self._pending_user_id or "guest",
-            topic=self._pending_topic or "financial",
+            user_id=_uid,
+            topic=_topic,
             plan_content=self._pending_plan_text or "",
             profile_data=self._pending_profile,
-            plan_name=f"{(self._pending_topic or 'Financial').title()} Plan",
+            plan_name=_pname,
         )
+        print(f"📦  create_pdf → success={result.get('success')}, file={result.get('filename', 'N/A')}")
         topic_label = (self._pending_topic or "financial").title()
         self._clear_pending()
 
@@ -259,6 +279,7 @@ class FinancialPlannerAgent:
         short_term = goals.get("short_term") or "Build emergency fund; pay down debt"
         long_term  = goals.get("long_term")  or "Retirement; house down payment"
 
+        print(f"🛠️  create_pdf({{'user_id': {user_id!r}, 'plan_name': 'Financial Plan', 'type': 'full_profile'}})")
         result = create_financial_plan_pdf(
             user_id=user_id,
             profile_data=profile,
@@ -267,6 +288,7 @@ class FinancialPlannerAgent:
             plan_name="Financial Plan",
             include_projections=True,
         )
+        print(f"📦  create_pdf → success={result.get('success')}, file={result.get('filename', 'N/A')}")
 
         income  = profile.get("income", 0)
         monthly = float(income) / 12 if income else 0
@@ -297,6 +319,7 @@ class FinancialPlannerAgent:
     # ── Guest plan ────────────────────────────────────────────────────────────
 
     def _guest_plan(self, user_id: str = "guest") -> Dict[str, Any]:
+        print(f"🛠️  create_pdf({{'user_id': {user_id!r}, 'plan_name': 'General Financial Plan', 'type': 'guest'}})")
         result = create_financial_plan_pdf(
             user_id=user_id,
             profile_data={},
@@ -305,6 +328,7 @@ class FinancialPlannerAgent:
             plan_name="General Financial Plan",
             include_projections=False,
         )
+        print(f"📦  create_pdf → success={result.get('success')}, file={result.get('filename', 'N/A')}")
         if result["success"]:
             msg = (
                 "✅ Here is a general financial plan based on CoFina best practices!\n"

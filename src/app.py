@@ -387,7 +387,8 @@ class InstrumentedOrchestrator(CoFinaOrchestrator):
 def _needs_rag(query: str) -> bool:
     triggers = [
         "what is", "explain", "how does", "define", "difference between",
-        "compare", "versus", " vs ", "example of", "tell me about",
+        "compare", "versus", " vs ", "example of", "tell me about", "think about",
+        "discuss about", "reason about", "justify"
     ]
     q = query.lower()
     return len(query.split()) > 10 or any(t in q for t in triggers)

@@ -209,3 +209,65 @@ class CheckpointManager:
                     sanitized[key] = f"[Truncated: {len(str(value))} chars]"
         
         return sanitized
+    def list_checkpoints(self, session_id: str = None, limit: int = 20) -> List[Dict[str, Any]]:
+        """
+        List recent checkpoints, optionally filtered by session_id.
+        Returns list of dicts with checkpoint metadata.
+        """
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                if session_id:
+                    rows = conn.execute(
+                        """SELECT checkpoint_id, session_id, user_id, checkpoint_reason, created_at, metadata
+                           FROM system_checkpoints WHERE session_id = ?
+                           ORDER BY created_at DESC LIMIT ?""",
+                        (session_id, limit)
+                    ).fetchall()
+                else:
+                    rows = conn.execute(
+                        """SELECT checkpoint_id, session_id, user_id, checkpoint_reason, created_at, metadata
+                           FROM system_checkpoints
+                           ORDER BY created_at DESC LIMIT ?""",
+                        (limit,)
+                    ).fetchall()
+                results = []
+                for r in rows:
+                    meta = {}
+                    try:
+                        meta = json.loads(r[5] or '{}')
+                    except Exception:
+                        pass
+                    results.append({
+                        "checkpoint_id": r[0],
+                        "session_id":    r[1],
+                        "user_id":       r[2],
+                        "reason":        r[3],
+                        "timestamp":     r[4],
+                        "turn":          meta.get("turn", "—"),
+                    })
+                return results
+        except Exception:
+            return []
+
+    def restore_checkpoint(self, checkpoint_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Restore a checkpoint by ID. Returns the state snapshot dict or None.
+        """
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                row = conn.execute(
+                    """SELECT state_snapshot, user_id FROM system_checkpoints
+                       WHERE checkpoint_id = ?""",
+                    (checkpoint_id,)
+                ).fetchone()
+                if not row:
+                    return None
+                conn.execute(
+                    "UPDATE system_checkpoints SET restored_at = ? WHERE checkpoint_id = ?",
+                    (datetime.now().isoformat(), checkpoint_id)
+                )
+                snap = json.loads(row[0])
+                snap["user_id"] = row[1]
+                return snap
+        except Exception:
+            return None

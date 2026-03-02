@@ -8,7 +8,7 @@ Key design decisions
 
 2. Intent classification for financial planning is handled by the
    FinancialPlannerAgent's own LLM classifier — NOT by keyword matching
-   in the orchestrator.  The orchestrator's LLM calls financial_planning_flow
+   in the orchestrator. The orchestrator's LLM calls financial_planning_flow
    when it judges the query is financial; the planner then classifies the
    fine-grained intent internally.
 
@@ -49,34 +49,34 @@ class CoFinaOrchestrator:
 
     def __init__(self, api_key: str) -> None:
         self.api_key = api_key
-        self.logger  = AgentLogger()
+        self.logger = AgentLogger()
 
         # Verification & timing
-        self.turn_number            = 0
-        self.last_rag_context       = ""
+        self.turn_number = 0
+        self.last_rag_context = ""
         self.last_retrieval_time_ms = 0
 
         # Core infrastructure
-        self.state_manager       = StateManager()
-        self.memory_manager      = MemoryManager()
-        self.checkpoint_manager  = CheckpointManager()
-        self.evaluator           = EvaluationMetrics()
+        self.state_manager = StateManager()
+        self.memory_manager = MemoryManager()
+        self.checkpoint_manager = CheckpointManager()
+        self.evaluator = EvaluationMetrics()
         self.adaptive_controller = AdaptiveController()
 
         # Sub-agents — pass api_key to FinancialPlannerAgent for its LLM classifier
         self.registration_agent = RegistrationAgent()
-        self.financial_planner  = FinancialPlannerAgent(api_key=api_key)
-        self.market_agent       = MarketAgent()
-        self.monitor_agent      = MonitorAgent()
-        self.summarizer_agent   = SummarizerAgent(api_key)
-        self.guardrail_agent    = GuardrailAgent()
+        self.financial_planner = FinancialPlannerAgent(api_key=api_key)
+        self.market_agent = MarketAgent()
+        self.monitor_agent = MonitorAgent()
+        self.summarizer_agent = SummarizerAgent(api_key)
+        self.guardrail_agent = GuardrailAgent()
 
         # RAG
         self.retriever = None
         try:
             from RAG.index import ensure_index
             from RAG.retriever import create_retriever
-            vector_store   = ensure_index(api_key)
+            vector_store = ensure_index(api_key)
             self.retriever = create_retriever(vector_store)
             self.financial_planner.rag_retriever = self.retriever
             print(" ... RAG system ready")
@@ -91,12 +91,12 @@ class CoFinaOrchestrator:
             api_key=api_key,
             base_url="https://ai-gateway.andrew.cmu.edu/",
         )
-        self.tools          = self._build_tools()
+        self.tools = self._build_tools()
         self.llm_with_tools = self.llm.bind_tools(self.tools)
 
         # Session state
-        self.current_session_id: str  = str(uuid.uuid4())[:8]
-        self.current_user_id:    str  = "guest"
+        self.current_session_id: str = str(uuid.uuid4())[:8]
+        self.current_user_id: str = "guest"
         self.conversation_history: List = []
 
     # ────────────────────────────────────────────────────────────────────
@@ -131,7 +131,7 @@ class CoFinaOrchestrator:
             and decides whether to generate a PDF.
             """
             profile = self._load_profile()
-            result  = self.financial_planner.process(
+            result = self.financial_planner.process(
                 query=user_input,
                 user_id=self.current_user_id,
                 context={"user_profile": profile, "session_id": self.current_session_id},
@@ -142,7 +142,7 @@ class CoFinaOrchestrator:
         def market_research_flow(user_input: str) -> str:
             """Product searches, price comparisons, and affordability checks."""
             profile = self._load_profile()
-            result  = self.market_agent.process(
+            result = self.market_agent.process(
                 query=user_input,
                 user_id=self.current_user_id,
                 context={"user_profile": profile, "session_id": self.current_session_id},
@@ -153,7 +153,7 @@ class CoFinaOrchestrator:
         def monitoring_flow(user_input: str) -> str:
             """Financial alerts, spending tracking, and goal progress monitoring."""
             profile = self._load_profile()
-            result  = self.monitor_agent.process(
+            result = self.monitor_agent.process(
                 user_id=self.current_user_id,
                 context={"user_profile": profile, "session_id": self.current_session_id},
             )
@@ -179,7 +179,7 @@ class CoFinaOrchestrator:
                 self.current_user_id = user_id
                 self.guardrail_agent.authenticate_session(self.current_session_id, user_id)
                 self.logger.log_step("login", {"user_id": user_id})
-                profile    = get_user_profile(user_id) or {}
+                profile = get_user_profile(user_id) or {}
                 first_name = profile.get("first_name", user_id)
                 return json.dumps({
                     "success": True,
@@ -201,9 +201,9 @@ class CoFinaOrchestrator:
         def get_user_status() -> str:
             """Return the current user's authentication status."""
             return json.dumps({
-                "user_id":       self.current_user_id,
+                "user_id": self.current_user_id,
                 "authenticated": self.current_user_id != "guest",
-                "session_id":    self.current_session_id,
+                "session_id": self.current_session_id,
             })
 
         @tool
@@ -229,7 +229,7 @@ class CoFinaOrchestrator:
             if not self.retriever:
                 return json.dumps({"error": "Knowledge base not available"})
 
-            t0   = time.perf_counter()
+            t0 = time.perf_counter()
             docs = self.retriever.invoke(query)
             self.last_retrieval_time_ms = round((time.perf_counter() - t0) * 1000)
 
@@ -335,7 +335,7 @@ class CoFinaOrchestrator:
                 if badges:
                     response_text += "\n\n" + "  │  ".join(badges)
 
-                self.last_rag_context       = ""
+                self.last_rag_context = ""
                 self.last_retrieval_time_ms = 0
             except Exception as exc:
                 self.logger.log_step("verification_error", str(exc))
@@ -352,7 +352,7 @@ class CoFinaOrchestrator:
     # ────────────────────────────────────────────────────────────────────
 
     def _tool_loop(self, messages: list, user_query: str) -> str:
-        tool_map  = {t.name: t for t in self.tools}
+        tool_map = {t.name: t for t in self.tools}
         max_turns = 4
 
         for _ in range(max_turns):
@@ -367,8 +367,8 @@ class CoFinaOrchestrator:
                     return final
 
                 for call in tool_calls:
-                    name    = call.get("name")
-                    args    = call.get("args", {})
+                    name = call.get("name")
+                    args = call.get("args", {})
                     call_id = call.get("id")
 
                     self.logger.log_step("tool_call", {"tool": name, "args": args})
@@ -379,7 +379,7 @@ class CoFinaOrchestrator:
                         try:
                             result = fn.invoke(args)
                             try:
-                                parsed  = json.loads(result) if isinstance(result, str) else result
+                                parsed = json.loads(result) if isinstance(result, str) else result
                                 success = not ("error" in parsed or parsed.get("success") is False)
                                 self.evaluator.log_tool_call(self.current_session_id, name, success)
                             except Exception:
@@ -416,7 +416,7 @@ class CoFinaOrchestrator:
 
     def _handle_registration_result(self, result: Dict[str, Any]) -> None:
         action = result.get("action")
-        data   = result.get("data", {})
+        data = result.get("data", {})
         if action == "complete" and data.get("user_id"):
             self.current_user_id = data["user_id"]
             self.guardrail_agent.authenticate_session(
@@ -450,45 +450,150 @@ class CoFinaOrchestrator:
             else "No active registration"
         )
         auth_status = (
-            f"Logged in as {self.current_user_id}"
+            f"✅ REGISTERED USER: {self.current_user_id} (Personalized advice mode)"
             if self.current_user_id != "guest"
-            else "Guest (not logged in)"
+            else "⚠️ GUEST USER (Generic advice mode - encourage registration for personalized plans)"
         )
-        return f"""You are CoFina, an intelligent financial assistant for young professionals.
-
-SESSION
-───────
-User         : {auth_status}
-Session ID   : {self.current_session_id}
-Registration : {reg_status}
-
-TOOLS
-─────
-registration_flow          — new account creation
-login_flow                 — log in an existing user (needs user_id + password)
-financial_planning_flow    — ALL financial planning: plans, budgets, goals, PDFs,
-                             debt, retirement, investing, car/house buying, savings.
-                             This tool classifies intent internally — always call it
-                             for financial topics rather than answering directly.
-market_research_flow       — product search, price comparison, affordability
-monitoring_flow            — alerts, spending tracker, goal progress
-get_user_status            — current auth status
-get_my_profile             — fetch the logged-in user's full profile
-search_financial_documents — educational questions: definitions, concepts, explanations
-TIME_TOOLS                 — date/time calculations
-
-ROUTING RULES
-─────────────
-• DEFINITION / CONCEPT questions ("What is X?", "Explain Y", "How does Z work?")
-  → search_financial_documents for grounded answers.
-• PLANNING / ACTION questions ("How should I buy a house?", "Help me pay off debt",
-  "Generate a plan", "Create a budget") → financial_planning_flow.
-  The tool decides internally whether to generate a PDF.
-• Never refuse to create a plan or PDF — always call financial_planning_flow.
-• LOGIN: ask for User ID and password together; call login_flow when you have both.
-• REGISTER: call registration_flow immediately.
-• Keep responses focused on financial well-being and actionable next steps.
+        
+        # Load profile summary if user is registered
+        profile_summary = ""
+        if self.current_user_id != "guest":
+            profile = self._load_profile()
+            if profile:
+                profile_summary = f"""
+USER PROFILE SUMMARY:
+────────────────────
+• Name: {profile.get('first_name', 'N/A')} {profile.get('last_name', '')}
+• Age: {profile.get('age', 'N/A')} | Occupation: {profile.get('occupation', 'N/A')}
+• Income: ${profile.get('monthly_income', 0):,}/month | Savings: ${profile.get('current_savings', 0):,}
+• Monthly Expenses: ${profile.get('monthly_expenses', 0):,}
+• Financial Goals: {', '.join(profile.get('financial_goals', ['Not specified']))}
+• Risk Tolerance: {profile.get('risk_tolerance', 'Not specified')}
+• Current Debt: {profile.get('debt_amount', 0)} ({profile.get('debt_type', 'None')})
+• Emergency Fund: {profile.get('emergency_fund_months', 0)} months
+• Investment Experience: {profile.get('investment_experience', 'Not specified')}
 """
+        
+        return f"""You are CoFina, an expert financial assistant for young professionals (ages 22-35). Your PRIMARY DIRECTIVE is to provide PERSONALIZED advice based on user profiles when available, and educational/generic guidance when users are guests.
+
+SESSION CONTEXT
+───────────────
+👤 {auth_status}
+🆔 Session ID: {self.current_session_id}
+📋 Registration: {reg_status}
+{profile_summary}
+
+PERSONALIZATION DIRECTIVES - CRITICAL
+─────────────────────────────────────
+
+🔴 **FOR REGISTERED USERS (Personalized Mode):**
+- ALL advice, plans, and recommendations MUST be tailored to their specific profile
+- Reference their actual numbers: income, expenses, goals, age
+- Calculate based on their real financial situation
+- Example: "Based on your monthly income of $5,000 and expenses of $3,500, you could save $1,500/month"
+- Use their goals to prioritize recommendations
+- Adjust risk tolerance in investment advice
+- Consider their age for long-term planning
+- NEVER give generic advice to registered users - always personalize
+
+🟡 **FOR GUEST USERS (Generic Mode):**
+- Provide educational, general advice with examples
+- Use hypothetical scenarios: "For someone earning $5,000/month..."
+- Always include a soft prompt to register for personalized advice
+- Example: "To get a plan tailored to YOUR specific situation, consider registering for free!"
+- Give valuable information but highlight the limitations of generic advice
+- Example footer: "💡 Want personalized numbers based on YOUR income and goals? Register for free!"
+
+AVAILABLE TOOLS & WHEN TO USE THEM
+──────────────────────────────────
+
+1. 🔑 **login_flow(user_id, password)**
+   - Use when: User provides credentials or says "login", "sign in"
+   - Collect BOTH user_id and password before calling
+   - After login, switch to personalized mode automatically
+
+2. 📝 **registration_flow(user_input)**
+   - Use when: User says "register", "sign up", "create account"
+   - Actively encourage guests to register for personalized advice
+   - Pass the user's exact message
+
+3. 💰 **financial_planning_flow(user_input)**
+   - PRIMARY TOOL for ALL financial planning
+   - FOR REGISTERED USERS: Will generate plans based on their profile
+   - FOR GUESTS: Will generate educational plans with placeholders
+   - ⚠️ **CRITICAL**: Pass the EXACT original user message - NEVER rewrite!
+   - Topics: budgets, savings, debt payoff, retirement, investing, emergency funds
+   - Topics: buying a car/house, financial goals, creating plans, PDF generation
+   - ✅ Correct: user says "yes" → financial_planning_flow(user_input="yes")
+
+4. 🛒 **market_research_flow(user_input)**
+   - FOR REGISTERED USERS: Filter products based on their financial situation
+   - FOR GUESTS: Show general comparisons with example scenarios
+   - Examples: "compare savings accounts", "best credit card for travel"
+
+5. 📊 **monitoring_flow(user_input)**
+   - FOR REGISTERED USERS: Track their actual goals and spending
+   - FOR GUESTS: Explain how monitoring works with examples
+
+6. 📚 **search_financial_documents(query)**
+   - Use for educational questions (works same for both user types)
+   - Examples: "What is compound interest?", "explain Roth IRA"
+
+7. ℹ️ **get_user_status()** - Check current auth status
+8. 👤 **get_my_profile()** - View profile (registered users only)
+9. ⏰ **TIME_TOOLS** - Date/time calculations
+
+DECISION FRAMEWORK
+─────────────────
+
+1. **First Message**: If user says "hi"/"hello":
+   - If GUEST: "Hi! I'm CoFina, your financial assistant. To give you personalized advice, I recommend registering. For now, I can still help with general questions!"
+   - If REGISTERED: "Welcome back, [Name]! Ready to work on your financial goals? I have your profile loaded."
+
+2. **Authentication Awareness**:
+   - GUEST: Always include a registration prompt in responses (subtly)
+   - REGISTERED: Never suggest registration, focus on personalization
+
+3. **Query Processing**:
+   - ALWAYS check auth status before formulating response
+   - REGISTERED: "Based on YOUR profile..."
+   - GUEST: "Generally speaking..." or "For someone with your typical profile..."
+
+4. **Plan Generation**:
+   - REGISTERED: Use their actual income, expenses, goals
+   - GUEST: Use example numbers with placeholders they can customize
+
+5. **Follow-up Handling**:
+   - REGISTERED: Reference previous conversations about their specific situation
+   - GUEST: Keep examples general but encouraging
+
+CRITICAL RULES - MUST FOLLOW
+────────────────────────────
+
+1. **NEVER give generic advice to registered users** - always personalize
+2. **NEVER pretend to have a guest's personal data** - use examples instead
+3. **ALWAYS include registration encouragement for guests** (but don't be pushy)
+4. **FOR GUESTS**: End each financial response with: "💡 Want this personalized for YOUR situation? Register for free!"
+5. **NEVER rewrite financial planning queries** - pass them exactly
+6. **ALWAYS call financial_planning_flow** for ANY financial topic
+7. **Keep responses warm, professional, and actionable**
+
+RESPONSE STYLE
+──────────────
+
+FOR REGISTERED USERS (Personalized):
+- "Based on your income of $X, I recommend..."
+- "Given your goal to save for a house in Y years..."
+- "With your risk tolerance level of [conservative/moderate/aggressive]..."
+- "Looking at your current debt situation..."
+
+FOR GUEST USERS (Generic with examples):
+- "Generally, for someone with a similar profile to yours..."
+- "As an example, if you earn $5,000/month, you might..."
+- "Many young professionals in your situation find that..."
+- [End with] "✨ Create a free account to get numbers tailored just for you!"
+
+Remember: Personalization is your superpower! Use the user's profile to make every interaction uniquely valuable to them. For guests, provide enough value to make them want to register, but always be clear about what they're missing."""
 
     def _is_conversational(self, query: str) -> bool:
         patterns = ["hi", "hello", "hey", "thanks", "thank you", "bye",
@@ -499,7 +604,7 @@ ROUTING RULES
     def _guardrail_response(self, result: Dict) -> str:
         actions = result.get("actions", [])
         if "authenticate" in actions:
-            return "For personalised advice please log in first. Say 'login' to start."
+            return "For personalised advice please log in first. Say 'login' to start. If you're new, say 'register' to create a free account!"
         if "block" in actions:
             return "I'm unable to process that request. Please ask a financial question."
         return "Let's keep our conversation focused on your financial goals. How can I help?"
@@ -512,7 +617,7 @@ ROUTING RULES
 
     def logout(self) -> None:
         self.guardrail_agent.end_session(self.current_session_id)
-        self.current_user_id      = "guest"
-        self.current_session_id   = str(uuid.uuid4())[:8]
+        self.current_user_id = "guest"
+        self.current_session_id = str(uuid.uuid4())[:8]
         self.conversation_history = []
         self.registration_agent.reset()

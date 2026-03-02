@@ -19,7 +19,7 @@ from agents.verifier import verify_response
 from tools.user_profile import get_user_profile, update_user_preferences, create_financial_plan
 from tools.searchProducts import search_products
 from tools.dateTime import TIME_TOOLS
-from tools.generatePlan import generate_financial_plan_pdf, create_financial_plan_pdf  # New imports
+from tools.create_pdf import create_pdf, create_financial_plan_pdf  # Updated imports
 from utils.logger import AgentLogger
 from db.queries import register_user, verify_login, reset_password_with_secret, get_secret_question
 
@@ -131,12 +131,15 @@ def generate_pdf_plan(
     plan_name: str = "Financial Plan"
 ) -> Dict[str, Any]:
     """Generate a PDF financial plan document."""
-    return generate_financial_plan_pdf(
+    return create_pdf(
+        content="",
+        title=plan_name,
         user_id=user_id,
+        content_type="financial_plan",
         profile_data=profile_data,
         short_term_goals=short_term_goals,
         long_term_goals=long_term_goals,
-        plan_name=plan_name
+        include_projections=True,
     )
 
 
@@ -604,7 +607,7 @@ IMPORTANT: The create_financial_plan_tool AUTOMATICALLY generates a PDF after cr
 
 STEP 9: Final Message
 After plan creation, check the tool result. If it contains "pdf_generated": true, tell user:
-"✅ Setup complete! Your financial plan has been created and a PDF has been generated at: allPlans/[filename].pdf"
+"✅ Setup complete! Your financial plan has been created and a PDF has been generated at: pdf_files/[filename].pdf"
 If PDF generation failed, still acknowledge plan creation.
 
 CURRENT REGISTRATION CONTEXT:

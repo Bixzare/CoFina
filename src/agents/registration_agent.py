@@ -10,7 +10,7 @@ Stage 2  Finance         (4 fields saved on confirmation)
 Derived automatically:
   • annual_income = monthly_income × 12
 
-Removed from original flow (can be collected later via profile update):
+Information that can be collected through conversation:
   last_name, profession, current_role, employment_start_date, age, gender,
   civil_status, number_of_children, retirement_age_target,
   debt collection, debt_strategy, savings_priority.
@@ -276,7 +276,7 @@ class RegistrationAgent:
 
             return self._reply(
                 "complete",
-                f"✅ Welcome aboard, {first_name}! Your CoFina account is ready.\n"
+                f"-): Welcome aboard, {first_name}! Your CoFina account is ready.\n"
                 f"  • Financial plan  : {plan_name}\n"
                 f"  • Monthly income  : ${monthly:,.2f}\n"
                 f"  • Risk profile    : {risk}\n\n"
